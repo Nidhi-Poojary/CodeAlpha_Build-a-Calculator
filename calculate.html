@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Attractive Calculator</title>
+    <!-- Using Orbitron font for a modern, digital look -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables for easy color theme management */
+        :root {
+            --bg: #1f1f1f; /* Dark background for calculator body */
+            --btn-bg: #2e2e2e; /* Default button background */
+            --btn-hover: #3e3e3e; /* Button hover state background */
+            --accent: #00cec9; /* Accent color (e.g., for clear button) */
+            --operator: #ff7675; /* Operator button color */
+            --equal: #00b894; /* Equals button color */
+        }
+
+        /* Universal box-sizing for consistent layout */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* Body styling: full viewport, centered, with a fresh gradient background */
+        body {
+            margin: 0;
+            font-family: 'Orbitron', sans-serif; /* Applied font */
+            background: linear-gradient(to right, #74ebd5, #acb6e5); /* Light blue to purple gradient */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh; /* Full viewport height */
+            padding: 10px; /* Add some padding for smaller screens */
+        }
+
+        /* Calculator container styling */
+        .calculator {
+            background: var(--bg); /* Dark background from CSS variable */
+            padding: 20px;
+            border-radius: 16px; /* Smooth rounded corners */
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4); /* Deep shadow for a floating effect */
+            width: 100%; /* Make it responsive */
+            max-width: 350px; /* Max width for desktop view */
+        }
+
+        /* Display screen styling */
+        .display {
+            background: #000; /* Pure black background for display */
+            color: #0f0; /* Classic green digital text color */
+            font-size: 2.5rem; /* Large font size for readability */
+            padding: 20px;
+            text-align: right;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow-x: auto; /* Allow horizontal scrolling if result is too long */
+            white-space: nowrap; /* Keep text on one line */
+            -webkit-overflow-scrolling: touch; /* Enable smooth scrolling on iOS */
+            scrollbar-width: none; /* Hide scrollbar for Firefox */
+            -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+        }
+
+        .display::-webkit-scrollbar { /* Hide scrollbar for Chrome/Safari/Opera */
+            display: none;
+        }
+
+        /* Buttons grid layout */
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 4 columns, equal width */
+            gap: 15px; /* Spacing between buttons */
+        }
+
+        /* General button styling */
+        button {
+            padding: 20px;
+            font-size: 1.5rem;
+            border: none;
+            border-radius: 12px; /* Rounded button corners */
+            background-color: var(--btn-bg);
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease; /* Smooth transitions for hover and active states */
+            user-select: none; /* Prevent text selection on click */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        /* Button hover effect */
+        button:hover {
+            background-color: var(--btn-hover);
+            transform: translateY(-2px); /* Slight lift on hover */
+        }
+
+        /* Operator button specific styling */
+        .operator {
+            background-color: var(--operator); /* Reddish color for operators */
+        }
+
+        .operator:hover {
+            background-color: #e17055; /* Slightly darker red on hover */
+        }
+
+        /* Equal button specific styling */
+        .equal {
+            background-color: var(--equal); /* Greenish color for equals */
+            grid-column: span 2; /* Spans two columns */
+        }
+
+        .equal:hover {
+            background-color: #00a383; /* Slightly darker green on hover */
+        }
+
+        /* Clear button specific styling */
+        .clear {
+            background-color: var(--accent); /* Accent color for clear */
+        }
+
+        .clear:hover {
+            background-color: #00bcd4; /* Slightly darker accent on hover */
+        }
+
+        /* Responsive adjustments for smaller screens */
+        @media (max-width: 400px) {
+            .calculator {
+                padding: 15px;
+                border-radius: 12px;
+            }
+            .display {
+                font-size: 2rem;
+                padding: 15px;
+            }
+            button {
+                padding: 15px;
+                font-size: 1.2rem;
+                border-radius: 10px;
+                gap: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calculator">
+        <!-- Display Screen -->
+        <div class="display" id="display">0</div>
+        
+        <!-- Calculator Buttons Grid -->
+        <div class="buttons">
+            <button class="clear" onclick="clearDisplay()">C</button>
+            <button onclick="appendValue('(')">(</button>
+            <button onclick="appendValue(')')">)</button>
+            <button class="operator" onclick="appendValue('/')">÷</button>
+
+            <button onclick="appendValue('7')">7</button>
+            <button onclick="appendValue('8')">8</button>
+            <button onclick="appendValue('9')">9</button>
+            <button class="operator" onclick="appendValue('*')">×</button>
+
+            <button onclick="appendValue('4')">4</button>
+            <button onclick="appendValue('5')">5</button>
+            <button onclick="appendValue('6')">6</button>
+            <button class="operator" onclick="appendValue('-')">−</button>
+
+            <button onclick="appendValue('1')">1</button>
+            <button onclick="appendValue('2')">2</button>
+            <button onclick="appendValue('3')">3</button>
+            <button class="operator" onclick="appendValue('+')">+</button>
+
+            <button onclick="appendValue('0')">0</button>
+            <button onclick="appendValue('.')">.</button>
+            <button class="equal" onclick="calculate()">=</button>
+        </div>
+    </div>
+
+    <script>
+        const display = document.getElementById('display');
+
+        // Function to append value to the display
+        function appendValue(val) {
+            // If display shows '0' or 'Error', replace it with the new value
+            if (display.innerText === '0' || display.innerText === 'Error') {
+                display.innerText = val;
+            } else {
+                // Otherwise, append the value
+                display.innerText += val;
+            }
+        }
+
+        // Function to clear the display
+        function clearDisplay() {
+            display.innerText = '0'; // Reset display to '0'
+        }
+
+        // Function to calculate the expression
+        function calculate() {
+            try {
+                // Use eval to calculate the expression. Note: eval() can be a security risk with untrusted input.
+                // For a production app, a safer parsing and calculation method should be used.
+                let result = eval(display.innerText.replace('×', '*').replace('÷', '/'));
+                // Limit decimal places for cleaner display if result is floating point
+                if (result % 1 !== 0) { // Check if it's a floating point number
+                    result = parseFloat(result.toFixed(10)); // Limit to 10 decimal places
+                }
+                display.innerText = result;
+            } catch (e) {
+                // Display 'Error' if calculation fails (e.g., invalid expression, division by zero)
+                display.innerText = 'Error';
+            }
+        }
+
+        // Keyboard support: Add event listener for key presses
+        document.addEventListener('keydown', (e) => {
+            const key = e.key; // Get the pressed key
+            const displayValue = display.innerText;
+
+            // Define allowed characters for direct appending
+            const allowed = '0123456789+-*/().'; 
+
+            // Handle direct key presses for numbers and basic operators/parentheses/decimal
+            if (allowed.includes(key)) {
+                // Map keyboard operators to display symbols
+                let charToAppend = key;
+                if (key === '/') charToAppend = '÷';
+                if (key === '*') charToAppend = '×';
+                appendValue(charToAppend);
+            } 
+            // Handle Enter key for calculation
+            else if (key === 'Enter') {
+                e.preventDefault(); // Prevent default Enter behavior (e.g., form submission)
+                calculate();
+            } 
+            // Handle Backspace for deleting last character
+            else if (key === 'Backspace') {
+                // Remove the last character from the display, or set to '0' if empty
+                display.innerText = displayValue.slice(0, -1) || '0';
+            } 
+            // Handle 'c' or 'C' for clearing display
+            else if (key === 'c' || key === 'C') {
+                clearDisplay();
+            }
+            // Add a slight visual feedback on button press from keyboard
+            const buttonElement = document.querySelector(`button[onclick*="appendValue('${key}')"]`) ||
+                                  document.querySelector(`button[onclick="clearDisplay()"][class*="clear"]`) ||
+                                  document.querySelector(`button[onclick="calculate()"][class*="equal"]`) ||
+                                  document.querySelector(`button[onclick*="appendValue('${key === '/' ? '÷' : (key === '*' ? '×' : key)}')"]`);
+
+            if (buttonElement) {
+                buttonElement.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    buttonElement.style.transform = 'scale(1)';
+                }, 100);
+            }
+        });
+    </script>
+
+</body>
+</html>
